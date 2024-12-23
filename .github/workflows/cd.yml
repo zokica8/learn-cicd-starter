@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL  }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -18,6 +21,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.0"
+
+      - name: Install goose Database migration tool
+        uses: mscno/setup-goose@v1
+        run: goose up
 
       - name: Build the Notely app
         run: ./scripts/buildprod.sh
@@ -35,6 +42,9 @@ jobs:
      
       - name: Build the image and upload it to registry
         run: 'gcloud builds submit --tag europe-west10-docker.pkg.dev/notely-445507/notely-ar-repo/notely:latest'
+
+      - name: Run the Database Migration
+        run: ./scripts/migrateup.sh
 
       - name: Deploy to Cloud Run
         run: 'gcloud run deploy notely --image europe-west10-docker.pkg.dev/notely-445507/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project notely-445507 --max-instances=4'
