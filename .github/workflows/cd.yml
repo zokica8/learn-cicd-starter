@@ -24,6 +24,8 @@ jobs:
 
       - name: Install goose Database migration tool
         uses: mscno/setup-goose@v1
+  
+      - name: Run goose
         run: goose up
 
       - name: Build the Notely app
